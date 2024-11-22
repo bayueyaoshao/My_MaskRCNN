@@ -9,6 +9,7 @@ from network_files import MaskRCNN
 from backbone import resnet50_fpn_backbone
 from my_dataset_coco import CocoDetection
 from my_dataset_voc import VOCInstances
+from my_dataset_custom import CustomDataset
 from train_utils import train_eval_utils as utils
 from train_utils import GroupedBatchSampler, create_aspect_ratio_groups
 
@@ -57,7 +58,9 @@ def main(args):
     # coco2017 -> annotations -> instances_train2017.json
     # train_dataset = CocoDetection(data_root, "train", data_transform["train"])
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> train.txt
-    train_dataset = VOCInstances(data_root, year="2012", txt_name="train.txt", transforms=data_transform["train"])
+    train_dataset = CustomDataset(data_root, name="train", transforms=data_transform["train"])
+    # train_dataset = VOCInstances(data_root, year="2012", txt_name="train.txt", transforms=data_transform["train"])
+   
     train_sampler = None
 
     # 是否按图片相似高宽比采样图片组成batch
@@ -93,7 +96,8 @@ def main(args):
     # coco2017 -> annotations -> instances_val2017.json
     # val_dataset = CocoDetection(data_root, "val", data_transform["val"])
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> val.txt
-    val_dataset = VOCInstances(data_root, year="2012", txt_name="val.txt", transforms=data_transform["val"])
+    # val_dataset = VOCInstances(data_root, year="2012", txt_name="val.txt", transforms=data_transform["val"])
+    val_dataset = CustomDataset(data_root, name="test", transforms=data_transform["val"])
     val_data_loader = torch.utils.data.DataLoader(val_dataset,
                                                   batch_size=1,
                                                   shuffle=False,
@@ -145,24 +149,24 @@ def main(args):
         # update the learning rate
         lr_scheduler.step()
 
-        # evaluate on the test dataset
-        det_info, seg_info = utils.evaluate(model, val_data_loader, device=device)
+        # # evaluate on the test dataset
+        # det_info, seg_info = utils.evaluate(model, val_data_loader, device=device)
 
-        # write detection into txt
-        with open(det_results_file, "a") as f:
-            # 写入的数据包括coco指标还有loss和learning rate
-            result_info = [f"{i:.4f}" for i in det_info + [mean_loss.item()]] + [f"{lr:.6f}"]
-            txt = "epoch:{} {}".format(epoch, '  '.join(result_info))
-            f.write(txt + "\n")
+        # # write detection into txt
+        # with open(det_results_file, "a") as f:
+        #     # 写入的数据包括coco指标还有loss和learning rate
+        #     result_info = [f"{i:.4f}" for i in det_info + [mean_loss.item()]] + [f"{lr:.6f}"]
+        #     txt = "epoch:{} {}".format(epoch, '  '.join(result_info))
+        #     f.write(txt + "\n")
 
-        # write seg into txt
-        with open(seg_results_file, "a") as f:
-            # 写入的数据包括coco指标还有loss和learning rate
-            result_info = [f"{i:.4f}" for i in seg_info + [mean_loss.item()]] + [f"{lr:.6f}"]
-            txt = "epoch:{} {}".format(epoch, '  '.join(result_info))
-            f.write(txt + "\n")
+        # # write seg into txt
+        # with open(seg_results_file, "a") as f:
+        #     # 写入的数据包括coco指标还有loss和learning rate
+        #     result_info = [f"{i:.4f}" for i in seg_info + [mean_loss.item()]] + [f"{lr:.6f}"]
+        #     txt = "epoch:{} {}".format(epoch, '  '.join(result_info))
+        #     f.write(txt + "\n")
 
-        val_map.append(det_info[1])  # pascal mAP
+        # val_map.append(det_info[1])  # pascal mAP
 
         # save weights
         save_files = {
@@ -194,9 +198,11 @@ if __name__ == "__main__":
     # 训练设备类型
     parser.add_argument('--device', default='cuda:0', help='device')
     # 训练数据集的根目录
-    parser.add_argument('--data-path', default='./data/VOCdevkit', help='dataset')
+    # parser.add_argument('--data-path', default='./data/VOCdevkit', help='dataset')
+    parser.add_argument('--data-path', default='./data/CustomDataset', help='dataset')
     # 检测目标类别数(不包含背景)
-    parser.add_argument('--num-classes', default=90, type=int, help='num_classes')
+    # parser.add_argument('--num-classes', default=90, type=int, help='num_classes')
+    parser.add_argument('--num-classes', default=1, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址
@@ -223,9 +229,10 @@ if __name__ == "__main__":
     # 针对torch.optim.lr_scheduler.MultiStepLR的参数
     parser.add_argument('--lr-gamma', default=0.1, type=float, help='decrease lr by a factor of lr-gamma')
     # 训练的batch size(如果内存/GPU显存充裕，建议设置更大)
-    parser.add_argument('--batch_size', default=1, type=int, metavar='N',
+    parser.add_argument('--batch_size', default=4, type=int, metavar='N',
                         help='batch size when training.')
-    parser.add_argument('--aspect-ratio-group-factor', default=3, type=int)
+    # parser.add_argument('--aspect-ratio-group-factor', default=3, type=int)
+    parser.add_argument('--aspect-ratio-group-factor', default=-1, type=int)
     parser.add_argument("--pretrain", type=bool, default=True, help="load COCO pretrain weights.")
     # 是否使用混合精度训练(需要GPU支持混合精度)
     parser.add_argument("--amp", default=False, help="Use torch.cuda.amp for mixed precision training")
