@@ -44,7 +44,8 @@ class VOCInstances(Dataset):
         self.masks = []           # 存储读取的SegmentationObject图片信息
 
         # 检查图片、xml文件以及mask是否都在
-        images_path = [os.path.join(image_dir, x + ".jpg") for x in file_names]
+        # images_path = [os.path.join(image_dir, x + ".jpg") for x in file_names]
+        images_path = [os.path.join(image_dir, x + ".png") for x in file_names]
         xmls_path = [os.path.join(xml_dir, x + '.xml') for x in file_names]
         masks_path = [os.path.join(mask_dir, x + ".png") for x in file_names]
         for idx, (img_path, xml_path, mask_path) in enumerate(zip(images_path, xmls_path, masks_path)):

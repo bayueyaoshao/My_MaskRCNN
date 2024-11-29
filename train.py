@@ -58,8 +58,8 @@ def main(args):
     # coco2017 -> annotations -> instances_train2017.json
     # train_dataset = CocoDetection(data_root, "train", data_transform["train"])
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> train.txt
-    train_dataset = CustomDataset(data_root, name="train", transforms=data_transform["train"])
-    # train_dataset = VOCInstances(data_root, year="2012", txt_name="train.txt", transforms=data_transform["train"])
+    # train_dataset = CustomDataset(data_root, name="train", transforms=data_transform["train"])
+    train_dataset = VOCInstances(data_root, year="2012", txt_name="train.txt", transforms=data_transform["train"])
    
     train_sampler = None
 
@@ -76,19 +76,19 @@ def main(args):
     batch_size = args.batch_size
     nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
     print('Using %g dataloader workers' % nw)
-
+    nw = 1
     if train_sampler:
         # 如果按照图片高宽比采样图片，dataloader中需要使用batch_sampler
         train_data_loader = torch.utils.data.DataLoader(train_dataset,
                                                         batch_sampler=train_batch_sampler,
-                                                        pin_memory=True,
+                                                        pin_memory=False,
                                                         num_workers=nw,
                                                         collate_fn=train_dataset.collate_fn)
     else:
         train_data_loader = torch.utils.data.DataLoader(train_dataset,
                                                         batch_size=batch_size,
                                                         shuffle=True,
-                                                        pin_memory=True,
+                                                        pin_memory=False,
                                                         num_workers=nw,
                                                         collate_fn=train_dataset.collate_fn)
 
@@ -96,12 +96,12 @@ def main(args):
     # coco2017 -> annotations -> instances_val2017.json
     # val_dataset = CocoDetection(data_root, "val", data_transform["val"])
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> val.txt
-    # val_dataset = VOCInstances(data_root, year="2012", txt_name="val.txt", transforms=data_transform["val"])
-    val_dataset = CustomDataset(data_root, name="test", transforms=data_transform["val"])
+    val_dataset = VOCInstances(data_root, year="2012", txt_name="val.txt", transforms=data_transform["val"])
+    # val_dataset = CustomDataset(data_root, name="test", transforms=data_transform["val"])
     val_data_loader = torch.utils.data.DataLoader(val_dataset,
                                                   batch_size=1,
                                                   shuffle=False,
-                                                  pin_memory=True,
+                                                  pin_memory=False,
                                                   num_workers=nw,
                                                   collate_fn=train_dataset.collate_fn)
 
@@ -198,11 +198,11 @@ if __name__ == "__main__":
     # 训练设备类型
     parser.add_argument('--device', default='cuda:0', help='device')
     # 训练数据集的根目录
-    # parser.add_argument('--data-path', default='./data/VOCdevkit', help='dataset')
-    parser.add_argument('--data-path', default='./data/CustomDataset', help='dataset')
+    parser.add_argument('--data-path', default='./data/VOCdevkit', help='dataset')
+    # parser.add_argument('--data-path', default='./data/CustomDataset', help='dataset')
     # 检测目标类别数(不包含背景)
-    # parser.add_argument('--num-classes', default=90, type=int, help='num_classes')
     parser.add_argument('--num-classes', default=1, type=int, help='num_classes')
+    # parser.add_argument('--num-classes', default=1, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址
@@ -210,10 +210,10 @@ if __name__ == "__main__":
     # 指定接着从哪个epoch数开始训练
     parser.add_argument('--start_epoch', default=0, type=int, help='start epoch')
     # 训练的总epoch数
-    parser.add_argument('--epochs', default=26, type=int, metavar='N',
+    parser.add_argument('--epochs', default=200, type=int, metavar='N',
                         help='number of total epochs to run')
     # 学习率
-    parser.add_argument('--lr', default=0.004, type=float,
+    parser.add_argument('--lr', default=0.001, type=float,
                         help='initial learning rate, 0.02 is the default value for training '
                              'on 8 gpus and 2 images_per_gpu')
     # SGD的momentum参数
@@ -224,12 +224,12 @@ if __name__ == "__main__":
                         metavar='W', help='weight decay (default: 1e-4)',
                         dest='weight_decay')
     # 针对torch.optim.lr_scheduler.MultiStepLR的参数
-    parser.add_argument('--lr-steps', default=[16, 22], nargs='+', type=int,
+    parser.add_argument('--lr-steps', default=[10, 50, 100], nargs='+', type=int,
                         help='decrease lr every step-size epochs')
     # 针对torch.optim.lr_scheduler.MultiStepLR的参数
     parser.add_argument('--lr-gamma', default=0.1, type=float, help='decrease lr by a factor of lr-gamma')
     # 训练的batch size(如果内存/GPU显存充裕，建议设置更大)
-    parser.add_argument('--batch_size', default=4, type=int, metavar='N',
+    parser.add_argument('--batch_size', default=1, type=int, metavar='N',
                         help='batch size when training.')
     # parser.add_argument('--aspect-ratio-group-factor', default=3, type=int)
     parser.add_argument('--aspect-ratio-group-factor', default=-1, type=int)

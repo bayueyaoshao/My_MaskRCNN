@@ -202,10 +202,10 @@ if __name__ == "__main__":
     parser.add_argument('--num-classes', type=int, default=90, help='number of classes')
 
     # 数据集的根目录
-    parser.add_argument('--data-path', default='/data/coco2017', help='dataset root')
+    parser.add_argument('--data-path', default='./data/coco2017', help='dataset root')
 
     # 训练好的权重文件
-    parser.add_argument('--weights-path', default='./save_weights/model_25.pth', type=str, help='training weights')
+    parser.add_argument('--weights-path', default='./save_weights/model_5.pth', type=str, help='training weights')
 
     # batch size(set to 1, don't change)
     parser.add_argument('--batch-size', default=1, type=int, metavar='N',

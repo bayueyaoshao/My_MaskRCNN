@@ -29,11 +29,11 @@ def time_synchronized():
 
 
 def main():
-    num_classes = 90  # 不包含背景
+    num_classes = 1  # 不包含背景
     # num_classes = 20  # 不包含背景
-    box_thresh = 0.4
-    weights_path = "./save_weights/model_25.pth"
-    img_path = r"D:\Work\Code\deep-learning-for-image-processing-master\pytorch_object_detection\mask_rcnn\data\VOCdevkit\VOC2012\JPEGImages/2007_000480.jpg"
+    box_thresh = 0.5
+    weights_path = "./save_weights/model_199.pth"
+    img_path = r"D:\Work\Git-Code\My_MaskRCNN\data\VOCdevkit\VOC2012\JPEGImages\ISIC_000022.png"
     label_json_path = './pascal_voc_indices.json'
 
     # get devices

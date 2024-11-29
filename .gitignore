@@ -4,9 +4,13 @@
 
 /data
 /__pycache__
+/Json
+/VOC2007
+/VOC2012
 /result
 *.pyc
 *.pth
+*.png
 
 
 
